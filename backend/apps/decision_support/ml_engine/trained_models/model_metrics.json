@@ -1,0 +1,111 @@
+{
+  "model_name": "RandomForest-Medical-Classifier",
+  "version": "v2.5-50k-plus",
+  "training_timestamp": "2026-11-01T16:15:39.841111Z",
+  "total_samples": 52500,
+  "train_samples": 42000,
+  "test_samples": 10500,
+  "num_diseases": 59,
+  "num_features": 101,
+  "train_accuracy": 0.988,
+  "test_top1_accuracy": 0.9577,
+  "test_top3_accuracy": 0.9938,
+  "test_top5_accuracy": 0.9973,
+  "generation_time_sec": 10.17,
+  "training_time_sec": 18.91,
+  "total_pipeline_time_sec": 35.73,
+  "algorithm_hyperparameters": {
+    "n_estimators": 120,
+    "max_depth": 22,
+    "min_samples_split": 4,
+    "min_samples_leaf": 2
+  },
+  "top_20_predictive_features": [
+    {
+      "feature": "High Fever (>38.5\u00b0C)",
+      "importance": 0.02864
+    },
+    {
+      "feature": "Persistent Nausea & Vomiting",
+      "importance": 0.02846
+    },
+    {
+      "feature": "Severe Malaise & Fatigue",
+      "importance": 0.02766
+    },
+    {
+      "feature": "vital_temperature",
+      "importance": 0.02699
+    },
+    {
+      "feature": "Severe Throbbing Headache",
+      "importance": 0.02552
+    },
+    {
+      "feature": "Severe Conjunctival & Palmar Pallor",
+      "importance": 0.0254
+    },
+    {
+      "feature": "Persistent Dry Paroxysmal Cough",
+      "importance": 0.0232
+    },
+    {
+      "feature": "Unintentional Weight Loss",
+      "importance": 0.02241
+    },
+    {
+      "feature": "Productive Cough with Purulent Sputum",
+      "importance": 0.0222
+    },
+    {
+      "feature": "Altered Mental Status / Acute Confusion",
+      "importance": 0.02207
+    },
+    {
+      "feature": "Splenomegaly",
+      "importance": 0.02171
+    },
+    {
+      "feature": "Dyspnea / Shortness of Breath",
+      "importance": 0.02132
+    },
+    {
+      "feature": "Profuse Diaphoresis / Night Sweats",
+      "importance": 0.02109
+    },
+    {
+      "feature": "Jaundice / Scleral Icterus",
+      "importance": 0.02068
+    },
+    {
+      "feature": "Bilateral Peripheral Pitting Edema",
+      "importance": 0.02041
+    },
+    {
+      "feature": "Tachypnea (>24 breaths/min)",
+      "importance": 0.01922
+    },
+    {
+      "feature": "Chills & Rigors",
+      "importance": 0.01892
+    },
+    {
+      "feature": "Palpitations / Tachycardia",
+      "importance": 0.01783
+    },
+    {
+      "feature": "Wheezing on Auscultation",
+      "importance": 0.01705
+    },
+    {
+      "feature": "Polydipsia (Excessive Thirst)",
+      "importance": 0.01612
+    }
+  ],
+  "feature_breakdown": {
+    "symptom_features": 84,
+    "vital_features": 7,
+    "demographic_features": 2,
+    "derived_features": 8
+  }
+}

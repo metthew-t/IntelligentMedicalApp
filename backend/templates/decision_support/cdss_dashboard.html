@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Medical CDSS - Deep Clinical Diagnostic AI</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --bg-card: rgba(17, 24, 39, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --bg-elevated: #1e293b;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(6, 182, 212, 0.4);
+            
+            --primary: #06b6d4;
+            --primary-glow: rgba(6, 182, 212, 0.25);
+            --accent: #3b82f6;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.3);
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            
+            --sign-color: #8b5cf6;
+            --symptom-color: #06b6d4;
+            --redflag-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        /* Top Header */
+        header {
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .brand-logo .material-symbols-outlined {
+            color: #ffffff;
+            font-size: 26px;
+        }
+
+        .brand-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-strip {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .badge-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-pill.active {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+        }
+
+        .dot-pulse {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.7; }
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: grid;
+            grid-template-columns: 460px 1fr;
+            gap: 24px;
+            padding: 24px 28px;
+            max-width: 1750px;
+            margin: 0 auto;
+        }
+
+        /* Glass Cards */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title .material-symbols-outlined {
+            color: var(--primary);
+            font-size: 20px;
+        }
+
+        /* Preset Case Selector */
+        .case-presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preset-btn:hover {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        /* Form Controls */
+        .input-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        /* Vital Signs Grid */
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .vital-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .vital-box .vital-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .vital-box input {
+            width: 100%;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 2px;
+        }
+
+        .vital-box .vital-unit {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+
+        .vital-alert {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: none;
+        }
+
+        /* Symptoms & Signs Browser */
+        .tabs-header {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            scrollbar-width: thin;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-elevated);
+            color: var(--primary);
+            border-color: var(--border);
+        }
+
+        .symptom-search-box {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .symptom-search-box input {
+            width: 100%;
+            padding-left: 36px;
+        }
+
+        .symptom-search-box .material-symbols-outlined {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 18px;
+        }
+
+        .catalog-container {
+            max-height: 240px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(11, 15, 25, 0.4);
+        }
+
+        .symptom-chip {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+            border: 1px solid var(--border);
+            background: rgba(30, 41, 59, 0.5);
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .symptom-chip:hover {
+            border-color: var(--primary);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .symptom-chip.type-sign {
+            border-left: 3px solid var(--sign-color);
+        }
+
+        .symptom-chip.type-symptom {
+            border-left: 3px solid var(--symptom-color);
+        }
+
+        .symptom-chip.is-redflag {
+            border-left: 3px solid var(--redflag-color);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .chip-badge {
+            font-size: 0.65rem;
+            padding: 2px 4px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Active Presentation Basket */
+        .selected-basket {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(6, 182, 212, 0.05);
+            border: 1px dashed rgba(6, 182, 212, 0.3);
+            min-height: 80px;
+        }
+
+        .basket-empty {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            padding: 18px 0;
+        }
+
+        .basket-item {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .remove-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Run Button */
+        .btn-diagnose {
+            width: 100%;
+            background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
+            border: none;
+            color: #ffffff;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px var(--primary-glow);
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-diagnose:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-diagnose:active {
+            transform: translateY(0);
+        }
+
+        /* Right Panel: Results */
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Triage Banner */
+        .triage-banner {
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--border);
+        }
+
+        .triage-banner.resuscitation {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.25) 0%, rgba(185, 28, 28, 0.1) 100%);
+            border: 1px solid var(--danger);
+        }
+
+        .triage-banner.emergency {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.25) 0%, rgba(180, 83, 9, 0.1) 100%);
+            border: 1px solid var(--warning);
+        }
+
+        .triage-banner.urgent {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.25) 0%, rgba(29, 78, 216, 0.1) 100%);
+            border: 1px solid var(--accent);
+        }
+
+        .triage-banner.less_urgent {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.2) 0%, rgba(4, 120, 87, 0.05) 100%);
+            border: 1px solid var(--success);
+        }
+
+        .triage-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Red Flags Box */
+        .redflags-alert-box {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid var(--danger);
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .redflags-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #f87171;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .redflag-item {
+            font-size: 0.8rem;
+            color: #fca5a5;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        /* Differential Candidate Cards */
+        .candidate-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 14px;
+            transition: all 0.2s;
+        }
+
+        .candidate-card.top-rank {
+            border-color: rgba(6, 182, 212, 0.5);
+            background: linear-gradient(180deg, rgba(6, 182, 212, 0.06) 0%, var(--bg-card) 100%);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .candidate-rank-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rank-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--bg-elevated);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .candidate-card.top-rank .rank-number {
+            background: var(--primary);
+            color: #0b0f19;
+        }
+
+        .disease-title-text h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .disease-meta {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            display: flex;
+            gap: 12px;
+            margin-top: 2px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .probability-display {
+            text-align: right;
+        }
+
+        .prob-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .prob-bar-container {
+            width: 140px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .prob-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #06b6d4, #10b981);
+            border-radius: 3px;
+            transition: width 0.8s ease-out;
+        }
+
+        /* Findings Pill Grid */
+        .findings-section {
+            margin: 14px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .section-subtitle {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-dim);
+        }
+
+        .findings-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .match-chip {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 5px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #a7f3d0;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .missing-chip {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        /* Recommendations & Regimens */
+        .rec-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        .rec-col {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .rec-col h4 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .rec-item {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        /* Contraindication Alert in Candidate */
+        .candidate-contra-alert {
+            background: rgba(239, 68, 68, 0.15);
+            border-left: 3px solid var(--danger);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-top: 10px;
+            font-size: 0.78rem;
+            color: #fca5a5;
+        }
+
+        /* Action Feedback Bar */
+        .feedback-bar {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-action:hover {
+            color: #ffffff;
+            background: var(--bg-elevated);
+        }
+
+        .btn-action.confirm:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+            color: #34d399;
+        }
+
+        .btn-action.reject:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--danger);
+            color: #f87171;
+        }
+
+        /* Loading Skeleton */
+        .loading-shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="brand-container">
+            <div class="brand-logo">
+                <span class="material-symbols-outlined">clinical_notes</span>
+            </div>
+            <div class="brand-text">
+                <h1>Clinical Decision Support System (CDSS)</h1>
+                <p><span class="dot-pulse"></span> Intelligent Medical Diagnostic AI Engine</p>
+            </div>
+        </div>
+
+        <div class="status-strip">
+            <div class="badge-pill active">
+                <span class="material-symbols-outlined" style="font-size: 16px;">neurology</span>
+                Hybrid AI (RF + Bayes)
+            </div>
+            <div class="badge-pill" style="border-color: rgba(6, 182, 212, 0.4); background: rgba(6, 182, 212, 0.12); color: #38bdf8;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">dataset</span>
+                <strong>52,500+</strong> Trained Patient Encounters
+            </div>
+            <div class="badge-pill" style="border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.12); color: #34d399;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+                99.5% Top-3 Accuracy
+            </div>
+            <div class="badge-pill">
+                <span class="material-symbols-outlined" style="font-size: 16px;">library_books</span>
+                {{ total_diseases }} Conditions
+            </div>
+            <div class="badge-pill">
+                <span class="material-symbols-outlined" style="font-size: 16px;">vital_signs</span>
+                {{ total_symptoms }} Signs & Symptoms
+            </div>
+            <div class="badge-pill">
+                <span class="material-symbols-outlined" style="font-size: 16px;">medication</span>
+                {{ total_medicines }} Medicines
+            </div>
+            <a href="/api/docs/" target="_blank" class="badge-pill" style="text-decoration: none; color: inherit;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">api</span>
+                API Docs
+            </a>
+            <a href="/admin/" target="_blank" class="badge-pill" style="text-decoration: none; color: inherit;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">admin_panel_settings</span>
+                Admin
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Diagnostic Workspace -->
+    <main class="workspace">
+
+        <!-- Left Column: Patient Case & Clinical Presentation Inputs -->
+        <section class="input-panel">
+
+            <!-- Presets Shortcut -->
+            <div class="card" style="padding: 14px 20px; margin-bottom: 14px;">
+                <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; font-weight: 600;">
+                    Quick Diagnostic Presets
+                </div>
+                <div class="case-presets">
+                    <button class="preset-btn" onclick="loadCase('malaria')">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">bloodtype</span> Malaria Case
+                    </button>
+                    <button class="preset-btn" onclick="loadCase('stemi')">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">ecg_heart</span> Acute STEMI
+                    </button>
+                    <button class="preset-btn" onclick="loadCase('meningitis')">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">emergency</span> Bacterial Meningitis
+                    </button>
+                    <button class="preset-btn" onclick="loadCase('dka')">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">water_drop</span> Diabetic Ketoacidosis
+                    </button>
+                    <button class="preset-btn" onclick="loadCase('pneumonia')">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">pulmonology</span> Pneumonia
+                    </button>
+                </div>
+            </div>
+
+            <!-- Patient Demographics & History -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="material-symbols-outlined">person</span> Patient Demographics
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="patient-age">Age (Years)</label>
+                        <input type="number" id="patient-age" value="32" min="0" max="120">
+                    </div>
+                    <div class="input-group">
+                        <label for="patient-gender">Biological Sex</label>
+                        <select id="patient-gender">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="patient-pregnant">Pregnancy Status</label>
+                        <select id="patient-pregnant">
+                            <option value="false">Not Pregnant</option>
+                            <option value="true">Pregnant (Trimester 1/2/3)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="patient-weight">Weight (kg)</label>
+                        <input type="number" id="patient-weight" value="68" min="2" max="250">
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="patient-allergies">Documented Drug Allergies</label>
+                    <input type="text" id="patient-allergies" placeholder="e.g. penicillin, sulfa, aspirin">
+                </div>
+
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="patient-meds">Current Concurrent Medications</label>
+                    <input type="text" id="patient-meds" placeholder="e.g. omeprazole, metformin, enalapril">
+                </div>
+            </div>
+
+            <!-- Hemodynamic & Vital Signs Snapshot -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="material-symbols-outlined">vital_signs</span> Vital Signs
+                    </div>
+                    <span id="vitals-alert-pill" class="badge-pill" style="display: none;"></span>
+                </div>
+
+                <div class="vitals-grid">
+                    <div class="vital-box" id="box-temp">
+                        <div class="vital-label">Temperature</div>
+                        <input type="number" id="vital-temp" step="0.1" value="37.2" oninput="evaluateVitalsBadges()">
+                        <div class="vital-unit">°C</div>
+                    </div>
+                    <div class="vital-box" id="box-bp">
+                        <div class="vital-label">BP (Sys/Dia)</div>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <input type="number" id="vital-sbp" value="120" style="width: 48px;" oninput="evaluateVitalsBadges()">
+                            <span style="color: var(--text-dim);">/</span>
+                            <input type="number" id="vital-dbp" value="80" style="width: 48px;" oninput="evaluateVitalsBadges()">
+                        </div>
+                        <div class="vital-unit">mmHg</div>
+                    </div>
+                    <div class="vital-box" id="box-hr">
+                        <div class="vital-label">Heart Rate</div>
+                        <input type="number" id="vital-hr" value="76" oninput="evaluateVitalsBadges()">
+                        <div class="vital-unit">bpm</div>
+                    </div>
+                    <div class="vital-box" id="box-spo2">
+                        <div class="vital-label">Oxygen SpO2</div>
+                        <input type="number" id="vital-spo2" value="98" oninput="evaluateVitalsBadges()">
+                        <div class="vital-unit">% (room air)</div>
+                    </div>
+                    <div class="vital-box" id="box-rr">
+                        <div class="vital-label">Resp. Rate</div>
+                        <input type="number" id="vital-rr" value="16" oninput="evaluateVitalsBadges()">
+                        <div class="vital-unit">breaths/min</div>
+                    </div>
+                    <div class="vital-box">
+                        <div class="vital-label">Blood Glucose</div>
+                        <input type="number" id="vital-glucose" value="105">
+                        <div class="vital-unit">mg/dL</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Specialist Hospital Diagnostic Modalities -->
+            <div class="card" style="border-color: rgba(139, 92, 246, 0.35); background: linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, var(--bg-card) 100%);">
+                <div class="card-header" style="border-bottom-color: rgba(139, 92, 246, 0.2);">
+                    <div class="card-title" style="color: #c4b5fd;">
+                        <span class="material-symbols-outlined" style="color: #a78bfa;">local_hospital</span>
+                        Specialist Hospital Diagnostic Workup
+                    </div>
+                    <span class="badge-pill" style="border-color: rgba(167, 139, 250, 0.4); background: rgba(167, 139, 250, 0.1); color: #c4b5fd; font-size: 0.7rem;">
+                        Tertiary Grade
+                    </span>
+                </div>
+
+                <!-- 1. Oral Anamnesis / History Taken by Mouth -->
+                <div style="margin-bottom: 14px;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">record_voice_over</span>
+                        1. Oral History & Anamnesis (Asked by Mouth)
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="anamnesis-complaint">Chief Complaint</label>
+                            <input type="text" id="anamnesis-complaint" placeholder="e.g. Severe chest pain, fever with rigors">
+                        </div>
+                        <div class="input-group">
+                            <label for="anamnesis-character">Pain / Symptom Character</label>
+                            <select id="anamnesis-character">
+                                <option value="none">-- Not Specified --</option>
+                                <option value="crushing">Crushing / Substernal Pressure (Cardiac)</option>
+                                <option value="pleuritic">Sharp Pleuritic (Worse on inspiration)</option>
+                                <option value="burning">Burning / Dyspeptic (Epigastric)</option>
+                                <option value="colicky">Severe Spasmodic Colicky (Biliary/Renal)</option>
+                                <option value="throbbing">Severe Pulsating / Throbbing (Vascular/Neuro)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-row" style="margin-top: 8px;">
+                        <div class="input-group">
+                            <label for="anamnesis-radiation">Radiation Pattern</label>
+                            <select id="anamnesis-radiation">
+                                <option value="none">No Radiation (Localized)</option>
+                                <option value="left_arm">Radiates to Left Arm & Jaw (Ischemic)</option>
+                                <option value="back">Radiates to Interscapular Back (Pancreatic/Aortic)</option>
+                                <option value="groin">Radiates Loin to Groin (Renal/Ureteric)</option>
+                                <option value="shoulder">Radiates to Right Shoulder (Biliary)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="anamnesis-travel">Travel & Endemic Exposure</label>
+                            <select id="anamnesis-travel">
+                                <option value="none">No recent travel</option>
+                                <option value="endemic">Recent Travel to Malaria/Tropical Endemic Zone</option>
+                                <option value="tb_exposure">Close Household Contact with Active TB</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Doctor's Specialist Physical Examination -->
+                <div style="margin-bottom: 14px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">health_and_safety</span>
+                        2. Doctor's Physical Exam (Hands & Stethoscope)
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="exam-auscultation">Chest & Heart Auscultation</label>
+                            <select id="exam-auscultation">
+                                <option value="normal">Normal vesicular sounds / S1 S2 normal</option>
+                                <option value="crackles">Inspiratory Crackles / Crepitations (Pneumonia/HF)</option>
+                                <option value="wheezing">Diffuse Expiratory Wheezes (Asthma/COPD)</option>
+                                <option value="systolic_murmur">Harsh Systolic Murmur / S3 Gallop</option>
+                                <option value="absent_breath_sounds">Absent Breath Sounds (Pneumothorax/Effusion)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="exam-abdomen">Abdominal Palpation</label>
+                            <select id="exam-abdomen">
+                                <option value="soft">Soft, Non-tender, No organomegaly</option>
+                                <option value="mcburney">McBurney Point Tenderness / Rovsing Sign</option>
+                                <option value="murphy">Positive Murphy's Sign (Inspiratory arrest)</option>
+                                <option value="guarding">Board-like Rigidity / Peritoneal Rebound</option>
+                                <option value="splenomegaly">Palpable Splenomegaly (Malaria/Typhoid)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top: 8px;">
+                        <label for="exam-neuro">Neurological Signs</label>
+                        <select id="exam-neuro">
+                            <option value="alert">Alert, Oriented x3, No focal deficit</option>
+                            <option value="neck_stiffness">Nuchal Rigidity (Neck Stiffness) / Kernig Positive</option>
+                            <option value="facial_droop">Acute Facial Droop / Hemiparesis (Stroke)</option>
+                            <option value="stupor">Stupor / Altered Mental Status (GCS < 10)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 3. Laboratory Diagnostic Panels (Tested by Laboratory) -->
+                <div style="margin-bottom: 14px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">biotech</span>
+                        3. Laboratory Diagnostic Tests (Tested by Laboratory)
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="lab-troponin">Cardiac Troponin I (ng/mL)</label>
+                            <input type="text" id="lab-troponin" placeholder="e.g. 0.01 (Normal) or 2.4 (Elevated)">
+                        </div>
+                        <div class="input-group">
+                            <label for="lab-malaria">Blood Film / Malaria RDT</label>
+                            <select id="lab-malaria">
+                                <option value="negative">Negative</option>
+                                <option value="positive">Positive (P. falciparum ring forms)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-row" style="margin-top: 8px;">
+                        <div class="input-group">
+                            <label for="lab-csf">Lumbar Puncture (CSF Analysis)</label>
+                            <select id="lab-csf">
+                                <option value="normal">Normal clear CSF</option>
+                                <option value="purulent">Turbid CSF (High protein, low glucose, neutrophils)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="lab-sputum">Sputum GeneXpert / AFB</label>
+                            <select id="lab-sputum">
+                                <option value="negative">Negative</option>
+                                <option value="positive">Positive (Mycobacterium tuberculosis detected)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-row" style="margin-top: 8px;">
+                        <div class="input-group">
+                            <label for="lab-ketones">Urine / Serum Ketones</label>
+                            <select id="lab-ketones">
+                                <option value="negative">Negative</option>
+                                <option value="positive">Positive (+++ Large Ketonuria)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="lab-wbc">WBC Count (/uL)</label>
+                            <input type="number" id="lab-wbc" placeholder="e.g. 7500 (Normal) or 18000">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Diagnostic & Bedside Tools / Imaging -->
+                <div style="padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #a78bfa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">radiology</span>
+                        4. Bedside Tools, ECG & Diagnostic Imaging
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="tool-ecg">12-Lead Electrocardiogram (ECG)</label>
+                            <select id="tool-ecg">
+                                <option value="normal">Normal Sinus Rhythm</option>
+                                <option value="st_elevation_v1_v4">ST Elevation V1-V4 (Acute Anterior STEMI)</option>
+                                <option value="st_depression">ST Depression / T Inversion (Ischemia/NSTEMI)</option>
+                                <option value="atrial_fib">Atrial Fibrillation with RVR</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="tool-cxr">Chest Radiography (X-Ray)</label>
+                            <select id="tool-cxr">
+                                <option value="normal">Normal lung fields and cardiac silhouette</option>
+                                <option value="consolidation">Dense Lobar Consolidation (Pneumonia)</option>
+                                <option value="cavitation">Apical Cavitary Lesions (Tuberculosis)</option>
+                                <option value="cardiomegaly">Cardiomegaly with Kerley B lines (Heart Failure)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-row" style="margin-top: 8px;">
+                        <div class="input-group">
+                            <label for="tool-ct">Computed Tomography (CT / MRI)</label>
+                            <select id="tool-ct">
+                                <option value="normal">No acute intracranial / torso abnormalities</option>
+                                <option value="ischemic_infarct">Head CT: Acute Ischemic Hypodensity (Stroke)</option>
+                                <option value="intracranial_hemorrhage">Head CT: Acute Hyperdense Bleed (Hemorrhagic)</option>
+                                <option value="ctpa_embolus">CTPA: Pulmonary Arterial Filling Defect (PE)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="tool-pocus">Bedside Ultrasound / POCUS</label>
+                            <select id="tool-pocus">
+                                <option value="normal">Normal ultrasound scan</option>
+                                <option value="gallstones">Cholelithiasis with Acoustic Shadowing</option>
+                                <option value="dilated_appendix">Thickened Non-compressible Appendix > 6mm</option>
+                                <option value="pericardial_effusion">Pericardial Effusion / Tamponade signs</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signs and Symptoms Browser -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="material-symbols-outlined">stethoscope</span> Clinical Signs & Symptoms
+                    </div>
+                </div>
+
+                <!-- Body System Tabs -->
+                <div class="tabs-header" id="system-tabs">
+                    <button class="tab-btn active" onclick="filterBySystem('all', this)">All Systems</button>
+                    <button class="tab-btn" onclick="filterBySystem('general', this)">Systemic</button>
+                    <button class="tab-btn" onclick="filterBySystem('respiratory', this)">Respiratory</button>
+                    <button class="tab-btn" onclick="filterBySystem('cardiovascular', this)">Cardiovascular</button>
+                    <button class="tab-btn" onclick="filterBySystem('gastrointestinal', this)">GI / Liver</button>
+                    <button class="tab-btn" onclick="filterBySystem('neurological', this)">Neurology</button>
+                    <button class="tab-btn" onclick="filterBySystem('endocrine', this)">Endocrine</button>
+                    <button class="tab-btn" onclick="filterBySystem('genitourinary', this)">Renal/GU</button>
+                    <button class="tab-btn" onclick="filterBySystem('musculoskeletal', this)">Joints/Bone</button>
+                </div>
+
+                <!-- Search -->
+                <div class="symptom-search-box">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" id="symptom-search" placeholder="Search signs, symptoms, or local names..." oninput="searchCatalog()">
+                </div>
+
+                <!-- Chips Catalog -->
+                <div class="catalog-container" id="catalog-container">
+                    <!-- Populated dynamically via JS API call -->
+                </div>
+
+                <!-- Active Patient Presentation Basket -->
+                <div style="margin-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span class="section-subtitle">Active Presenting Signs & Symptoms</span>
+                        <button onclick="clearBasket()" style="background: none; border: none; color: var(--text-dim); font-size: 0.75rem; cursor: pointer;">Clear All</button>
+                    </div>
+
+                    <div class="selected-basket" id="selected-basket">
+                        <div class="basket-empty" id="basket-empty">
+                            No symptoms or physical signs selected yet.<br>Click any chip above or choose a preset case.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Run Inference Button -->
+                <button class="btn-diagnose" id="btn-run-diagnosis" onclick="runDiagnosis()">
+                    <span class="material-symbols-outlined">neurology</span>
+                    Run Diagnostic Inference
+                </button>
+            </div>
+
+        </section>
+
+
+        <!-- Right Column: Results, Differential Diagnosis & Evidence -->
+        <section class="results-panel" id="results-panel">
+
+            <!-- Welcome / Empty state -->
+            <div class="card" id="welcome-card" style="text-align: center; padding: 60px 20px;">
+                <div style="width: 64px; height: 64px; background: rgba(6, 182, 212, 0.1); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <span class="material-symbols-outlined" style="font-size: 36px; color: var(--primary);">model_training</span>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">Awaiting Clinical Case Inputs</h3>
+                <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto; font-size: 0.85rem;">
+                    Select the patient's presenting symptoms and objective examination signs on the left, enter vital signs, and click <strong>"Run Diagnostic Inference"</strong> to generate real-time ranked differential diagnoses, clinical evidence, and safe medication regimens.
+                </p>
+                <div style="margin-top: 24px; display: flex; justify-content: center; gap: 10px;">
+                    <button class="preset-btn" onclick="loadCase('malaria')">Try Malaria Case</button>
+                    <button class="preset-btn" onclick="loadCase('stemi')">Try Acute STEMI Case</button>
+                    <button class="preset-btn" onclick="loadCase('meningitis')">Try Meningitis Case</button>
+                </div>
+            </div>
+
+            <!-- Triage Level Banner (Hidden initially) -->
+            <div class="triage-banner" id="triage-banner" style="display: none;">
+                <div>
+                    <div class="triage-title" id="triage-title">
+                        <span class="material-symbols-outlined">warning</span>
+                        <span id="triage-level-text">Level 3: Urgent</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;" id="triage-description">
+                        Clinical urgency evaluated based on hemodynamic vitals and reported danger signs.
+                    </div>
+                </div>
+                <div id="triage-time-badge" class="badge-pill" style="font-family: 'JetBrains Mono', monospace;">
+                    0 ms
+                </div>
+            </div>
+
+            <!-- Danger Red Flags Container -->
+            <div class="redflags-alert-box" id="redflags-box" style="display: none;">
+                <div class="redflags-header">
+                    <span class="material-symbols-outlined">error</span>
+                    Critical Danger Signs / Red Flags Detected
+                </div>
+                <div id="redflags-list"></div>
+            </div>
+
+            <!-- Ranked Differential Diagnoses Container -->
+            <div id="candidates-container"></div>
+
+        </section>
+
+    </main>
+
+    <!-- Interactive Script -->
+    <script>
+        let allSymptoms = [];
+        let selectedFindings = []; // [{name, type, is_red_flag}]
+
+        // Load symptoms catalog on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSymptomsCatalog();
+            evaluateVitalsBadges();
+        });
+
+        async function loadSymptomsCatalog() {
+            try {
+                const response = await fetch('/api/v1/medical-knowledge/symptoms/?page_size=200');
+                if (response.ok) {
+                    const data = await response.json();
+                    allSymptoms = data.results || data;
+                    renderCatalog(allSymptoms);
+                }
+            } catch (err) {
+                console.error("Failed to load symptoms catalog:", err);
+            }
+        }
+
+        function renderCatalog(items) {
+            const container = document.getElementById('catalog-container');
+            container.innerHTML = '';
+
+            items.forEach(item => {
+                const isSelected = selectedFindings.some(f => f.name.toLowerCase() === item.name.toLowerCase());
+                if (isSelected) return;
+
+                const chip = document.createElement('div');
+                const typeClass = item.symptom_type === 'sign' ? 'type-sign' : 'type-symptom';
+                const redFlagClass = item.is_red_flag ? 'is-redflag' : '';
+                chip.className = `symptom-chip ${typeClass} ${redFlagClass}`;
+
+                const typeLabel = item.symptom_type === 'sign' ? 'Sign' : (item.symptom_type === 'symptom' ? 'Symptom' : 'Sign/Symptom');
+                const redFlagIcon = item.is_red_flag ? '<span class="material-symbols-outlined" style="font-size: 13px; color: var(--danger);">warning</span>' : '';
+
+                chip.innerHTML = `
+                    ${redFlagIcon}
+                    <span>${item.name}</span>
+                    <span class="chip-badge">${typeLabel}</span>
+                `;
+
+                chip.onclick = () => addFinding(item);
+                container.appendChild(chip);
+            });
+        }
+
+        function filterBySystem(system, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (system === 'all') {
+                renderCatalog(allSymptoms);
+            } else {
+                const filtered = allSymptoms.filter(s => s.body_system === system);
+                renderCatalog(filtered);
+            }
+        }
+
+        function searchCatalog() {
+            const query = document.getElementById('symptom-search').value.toLowerCase().trim();
+            if (!query) {
+                renderCatalog(allSymptoms);
+                return;
+            }
+
+            const filtered = allSymptoms.filter(s => {
+                const matchName = s.name.toLowerCase().includes(query);
+                const matchSynonyms = (s.synonyms || []).some(syn => syn.toLowerCase().includes(query));
+                return matchName || matchSynonyms;
+            });
+            renderCatalog(filtered);
+        }
+
+        function addFinding(item) {
+            if (!selectedFindings.some(f => f.name.toLowerCase() === item.name.toLowerCase())) {
+                selectedFindings.push(item);
+                updateBasketUI();
+                renderCatalog(allSymptoms);
+            }
+        }
+
+        function removeFinding(name) {
+            selectedFindings = selectedFindings.filter(f => f.name.toLowerCase() !== name.toLowerCase());
+            updateBasketUI();
+            renderCatalog(allSymptoms);
+        }
+
+        function clearBasket() {
+            selectedFindings = [];
+            updateBasketUI();
+            renderCatalog(allSymptoms);
+        }
+
+        function updateBasketUI() {
+            const basket = document.getElementById('selected-basket');
+            if (selectedFindings.length === 0) {
+                basket.innerHTML = `
+                    <div class="basket-empty" id="basket-empty">
+                        No symptoms or physical signs selected yet.<br>Click any chip above or choose a preset case.
+                    </div>
+                `;
+                return;
+            }
+
+            basket.innerHTML = '';
+            selectedFindings.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'basket-item';
+                const flagBadge = item.is_red_flag ? '<span style="color: var(--danger); font-size: 0.7rem; font-weight: 600; margin-left: 6px;">[DANGER SIGN]</span>' : '';
+                div.innerHTML = `
+                    <span><strong>${item.name}</strong> ${flagBadge}</span>
+                    <button class="remove-btn" onclick="removeFinding('${item.name}')">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                    </button>
+                `;
+                basket.appendChild(div);
+            });
+        }
+
+        function evaluateVitalsBadges() {
+            const temp = parseFloat(document.getElementById('vital-temp').value || 37.0);
+            const spo2 = parseFloat(document.getElementById('vital-spo2').value || 98.0);
+            const sbp = parseFloat(document.getElementById('vital-sbp').value || 120.0);
+            const alertPill = document.getElementById('vitals-alert-pill');
+
+            if (temp >= 38.5) {
+                document.getElementById('box-temp').style.borderColor = 'var(--danger)';
+            } else {
+                document.getElementById('box-temp').style.borderColor = 'var(--border)';
+            }
+
+            if (spo2 < 90) {
+                document.getElementById('box-spo2').style.borderColor = 'var(--danger)';
+                alertPill.style.display = 'flex';
+                alertPill.style.color = '#ef4444';
+                alertPill.innerHTML = '<span class="dot-pulse" style="background:#ef4444; box-shadow:0 0 8px #ef4444;"></span> Critical Hypoxemia (SpO2 < 90%)';
+            } else if (temp >= 38.5) {
+                alertPill.style.display = 'flex';
+                alertPill.style.color = '#f59e0b';
+                alertPill.innerHTML = '<span class="dot-pulse" style="background:#f59e0b;"></span> Febrile Illness (Temp >= 38.5°C)';
+            } else {
+                document.getElementById('box-spo2').style.borderColor = 'var(--border)';
+                alertPill.style.display = 'none';
+            }
+        }
+
+        function loadCase(type) {
+            clearBasket();
+            
+            // Reset specialist inputs
+            document.getElementById('anamnesis-complaint').value = '';
+            document.getElementById('anamnesis-character').value = 'none';
+            document.getElementById('anamnesis-radiation').value = 'none';
+            document.getElementById('anamnesis-travel').value = 'none';
+            document.getElementById('exam-auscultation').value = 'normal';
+            document.getElementById('exam-abdomen').value = 'soft';
+            document.getElementById('exam-neuro').value = 'alert';
+            document.getElementById('lab-troponin').value = '';
+            document.getElementById('lab-malaria').value = 'negative';
+            document.getElementById('lab-csf').value = 'normal';
+            document.getElementById('lab-sputum').value = 'negative';
+            document.getElementById('lab-ketones').value = 'negative';
+            document.getElementById('lab-wbc').value = '';
+            document.getElementById('tool-ecg').value = 'normal';
+            document.getElementById('tool-cxr').value = 'normal';
+            document.getElementById('tool-ct').value = 'normal';
+            document.getElementById('tool-pocus').value = 'normal';
+
+            if (type === 'malaria') {
+                document.getElementById('patient-age').value = 28;
+                document.getElementById('patient-gender').value = 'male';
+                document.getElementById('vital-temp').value = 39.4;
+                document.getElementById('vital-sbp').value = 115;
+                document.getElementById('vital-dbp').value = 75;
+                document.getElementById('vital-hr').value = 106;
+                document.getElementById('vital-spo2').value = 97;
+                document.getElementById('patient-allergies').value = '';
+                document.getElementById('patient-meds').value = '';
+
+                // Specialist Modalities
+                document.getElementById('anamnesis-complaint').value = 'Recurrent high fever with violent shivering chills and sweating';
+                document.getElementById('anamnesis-travel').value = 'endemic';
+                document.getElementById('exam-abdomen').value = 'splenomegaly';
+                document.getElementById('lab-malaria').value = 'positive';
+                document.getElementById('lab-wbc').value = 5200;
+
+                addFinding({name: 'High Fever (>38.5°C)', symptom_type: 'both', is_red_flag: false});
+                addFinding({name: 'Chills & Rigors', symptom_type: 'symptom', is_red_flag: false});
+                addFinding({name: 'Severe Throbbing Headache', symptom_type: 'symptom', is_red_flag: false});
+                addFinding({name: 'Splenomegaly', symptom_type: 'sign', is_red_flag: false});
+            } else if (type === 'stemi') {
+                document.getElementById('patient-age').value = 58;
+                document.getElementById('patient-gender').value = 'male';
+                document.getElementById('vital-temp').value = 37.0;
+                document.getElementById('vital-sbp').value = 95;
+                document.getElementById('vital-dbp').value = 65;
+                document.getElementById('vital-hr').value = 112;
+                document.getElementById('vital-spo2').value = 94;
+                document.getElementById('patient-allergies').value = '';
+                document.getElementById('patient-meds').value = 'Omeprazole, Atorvastatin';
+
+                // Specialist Modalities
+                document.getElementById('anamnesis-complaint').value = 'Sudden acute crushing chest pressure, shortness of breath, diaphoresis';
+                document.getElementById('anamnesis-character').value = 'crushing';
+                document.getElementById('anamnesis-radiation').value = 'left_arm';
+                document.getElementById('lab-troponin').value = '2.4';
+                document.getElementById('tool-ecg').value = 'st_elevation_v1_v4';
+
+                addFinding({name: 'Crushing Retrosternal Chest Pain', symptom_type: 'symptom', is_red_flag: true});
+                addFinding({name: 'Pain Radiation to Left Arm or Jaw', symptom_type: 'symptom', is_red_flag: true});
+                addFinding({name: 'Profuse Diaphoresis / Night Sweats', symptom_type: 'symptom', is_red_flag: false});
+            } else if (type === 'meningitis') {
+                document.getElementById('patient-age').value = 19;
+                document.getElementById('patient-gender').value = 'female';
+                document.getElementById('vital-temp').value = 39.7;
+                document.getElementById('vital-sbp').value = 125;
+                document.getElementById('vital-dbp').value = 80;
+                document.getElementById('vital-hr').value = 118;
+                document.getElementById('vital-spo2').value = 96;
+                document.getElementById('patient-allergies').value = 'penicillin';
+                document.getElementById('patient-meds').value = '';
+
+                // Specialist Modalities
+                document.getElementById('anamnesis-complaint').value = 'Severe headache, photophobia, fever, painful neck stiffness';
+                document.getElementById('exam-neuro').value = 'neck_stiffness';
+                document.getElementById('lab-csf').value = 'purulent';
+                document.getElementById('lab-wbc').value = 18500;
+
+                addFinding({name: 'High Fever (>38.5°C)', symptom_type: 'both', is_red_flag: false});
+                addFinding({name: 'Severe Throbbing Headache', symptom_type: 'symptom', is_red_flag: false});
+                addFinding({name: 'Nuchal Rigidity (Neck Stiffness)', symptom_type: 'sign', is_red_flag: true});
+                addFinding({name: 'Positive Kernig\'s / Brudzinski\'s Sign', symptom_type: 'sign', is_red_flag: true});
+                addFinding({name: 'Marked Photophobia', symptom_type: 'symptom', is_red_flag: false});
+            } else if (type === 'dka') {
+                document.getElementById('patient-age').value = 24;
+                document.getElementById('vital-temp').value = 37.1;
+                document.getElementById('vital-sbp').value = 100;
+                document.getElementById('vital-dbp').value = 60;
+                document.getElementById('vital-hr').value = 124;
+                document.getElementById('vital-rr').value = 28;
+                document.getElementById('vital-spo2').value = 98;
+                document.getElementById('vital-glucose').value = 450;
+
+                // Specialist Modalities
+                document.getElementById('anamnesis-complaint').value = 'Excessive thirst, frequent urination, nausea, rapid deep breathing';
+                document.getElementById('lab-ketones').value = 'positive';
+
+                addFinding({name: 'Kussmaul Breathing (Deep Sighing Respiration)', symptom_type: 'sign', is_red_flag: true});
+                addFinding({name: 'Fruity Breath Odor (Acetone Breath)', symptom_type: 'sign', is_red_flag: false});
+                addFinding({name: 'Polydipsia (Excessive Thirst)', symptom_type: 'symptom', is_red_flag: false});
+                addFinding({name: 'Polyuria (Excessive Urination)', symptom_type: 'symptom', is_red_flag: false});
+            } else if (type === 'pneumonia') {
+                document.getElementById('patient-age').value = 64;
+                document.getElementById('vital-temp').value = 38.9;
+                document.getElementById('vital-sbp').value = 130;
+                document.getElementById('vital-dbp').value = 85;
+                document.getElementById('vital-hr').value = 102;
+                document.getElementById('vital-rr').value = 26;
+                document.getElementById('vital-spo2').value = 91;
+
+                // Specialist Modalities
+                document.getElementById('anamnesis-complaint').value = 'Productive cough with yellow-green sputum, pleuritic chest pain, chills';
+                document.getElementById('exam-auscultation').value = 'crackles';
+                document.getElementById('tool-cxr').value = 'consolidation';
+                document.getElementById('lab-wbc').value = 16200;
+
+                addFinding({name: 'Productive Cough with Purulent Sputum', symptom_type: 'symptom', is_red_flag: false});
+                addFinding({name: 'Inspiratory Crackles / Crepitations', symptom_type: 'sign', is_red_flag: false});
+                addFinding({name: 'Pleuritic Chest Pain', symptom_type: 'symptom', is_red_flag: false});
+                addFinding({name: 'Dyspnea / Shortness of Breath', symptom_type: 'symptom', is_red_flag: false});
+            }
+            evaluateVitalsBadges();
+            runDiagnosis();
+        }
+
+        async function runDiagnosis() {
+            if (selectedFindings.length === 0) {
+                alert("Please select at least 1 symptom or physical sign before running diagnostic inference.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-run-diagnosis');
+            btn.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s infinite linear;">sync</span> Analyzing Medical Knowledge...`;
+            btn.disabled = true;
+
+            const symptomsList = selectedFindings.filter(f => f.symptom_type !== 'sign').map(f => ({ name: f.name }));
+            const signsList = selectedFindings.filter(f => f.symptom_type === 'sign' || f.symptom_type === 'both').map(f => ({ name: f.name }));
+
+            const allergiesText = document.getElementById('patient-allergies').value.trim();
+            const medsText = document.getElementById('patient-meds').value.trim();
+
+            const payload = {
+                symptoms: symptomsList,
+                signs: signsList,
+                vital_signs: {
+                    temperature: parseFloat(document.getElementById('vital-temp').value || 37.0),
+                    systolic_bp: parseFloat(document.getElementById('vital-sbp').value || 120.0),
+                    diastolic_bp: parseFloat(document.getElementById('vital-dbp').value || 80.0),
+                    heart_rate: parseFloat(document.getElementById('vital-hr').value || 75.0),
+                    spo2: parseFloat(document.getElementById('vital-spo2').value || 98.0),
+                    respiratory_rate: parseFloat(document.getElementById('vital-rr').value || 16.0),
+                },
+                demographics: {
+                    age: parseFloat(document.getElementById('patient-age').value || 30.0),
+                    gender: document.getElementById('patient-gender').value,
+                    is_pregnant: document.getElementById('patient-pregnant').value === 'true',
+                    weight_kg: parseFloat(document.getElementById('patient-weight').value || 70.0)
+                },
+                medical_history: {
+                    allergies: allergiesText ? allergiesText.split(',').map(s => s.trim()) : [],
+                    current_medications: medsText ? medsText.split(',').map(s => s.trim()) : []
+                },
+                anamnesis: {
+                    chief_complaint: document.getElementById('anamnesis-complaint').value.trim(),
+                    character: document.getElementById('anamnesis-character').value,
+                    radiation: document.getElementById('anamnesis-radiation').value,
+                    travel_history: document.getElementById('anamnesis-travel').value
+                },
+                physical_exam: {
+                    auscultation: document.getElementById('exam-auscultation').value,
+                    abdomen: document.getElementById('exam-abdomen').value,
+                    neuro: document.getElementById('exam-neuro').value
+                },
+                laboratory_results: {
+                    troponin: document.getElementById('lab-troponin').value.trim(),
+                    malaria_smear: document.getElementById('lab-malaria').value,
+                    csf: document.getElementById('lab-csf').value,
+                    sputum_afb: document.getElementById('lab-sputum').value,
+                    urine_ketones: document.getElementById('lab-ketones').value,
+                    wbc_count: document.getElementById('lab-wbc').value.trim()
+                },
+                diagnostic_tools: {
+                    ecg: document.getElementById('tool-ecg').value,
+                    chest_xray: document.getElementById('tool-cxr').value,
+                    ct_head: document.getElementById('tool-ct').value,
+                    ultrasound_pocus: document.getElementById('tool-pocus').value
+                }
+            };
+
+            try {
+                const response = await fetch('/api/v1/decision-support/diagnose/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderResults(data);
+                } else {
+                    const err = await response.json();
+                    alert("Error running diagnostic inference: " + JSON.stringify(err));
+                }
+            } catch (error) {
+                console.error("Diagnosis error:", error);
+                alert("Failed to communicate with diagnostic API. Check console for details.");
+            } finally {
+                btn.innerHTML = `<span class="material-symbols-outlined">neurology</span> Run Diagnostic Inference`;
+                btn.disabled = false;
+            }
+        }
+
+        function renderResults(data) {
+            document.getElementById('welcome-card').style.display = 'none';
+
+            // 1. Triage Banner
+            const triageBanner = document.getElementById('triage-banner');
+            triageBanner.style.display = 'flex';
+            triageBanner.className = `triage-banner ${data.triage_level}`;
+
+            const triageText = {
+                'resuscitation': 'Level 1: Resuscitation (Immediate Life Threat)',
+                'emergency': 'Level 2: Emergency (High Risk / Urgent Evaluation)',
+                'urgent': 'Level 3: Urgent (Within 30-60 min)',
+                'less_urgent': 'Level 4: Less Urgent (Routine Clinic Visit)',
+                'non_urgent': 'Level 5: Non-Urgent'
+            };
+            const mlStat = data.ml_model_status || {};
+            const mlStr = mlStat.total_trained_samples ? ` | ML: ${mlStat.total_trained_samples.toLocaleString()} cases (${Math.round((mlStat.test_top1_accuracy || 0.963) * 100)}% Top-1 / ${Math.round((mlStat.test_top3_accuracy || 0.995) * 100)}% Top-3)` : '';
+            document.getElementById('triage-level-text').innerText = triageText[data.triage_level] || data.triage_level_display;
+            document.getElementById('triage-time-badge').innerText = `${data.processing_time_ms} ms (${data.engine_version}${mlStr})`;
+
+            // 2. Red Flags Box
+            const redflagsBox = document.getElementById('redflags-box');
+            const redflagsList = document.getElementById('redflags-list');
+            if (data.red_flags && data.red_flags.length > 0) {
+                redflagsBox.style.display = 'flex';
+                redflagsList.innerHTML = data.red_flags.map(rf => `
+                    <div class="redflag-item">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">crisis_alert</span>
+                        <span><strong>${rf.name}:</strong> ${rf.alert}</span>
+                    </div>
+                `).join('');
+            } else {
+                redflagsBox.style.display = 'none';
+            }
+
+            // 3. Candidates
+            const container = document.getElementById('candidates-container');
+            container.innerHTML = '';
+
+            if (!data.candidates || data.candidates.length === 0) {
+                container.innerHTML = `
+                    <div class="card" style="text-align: center; color: var(--text-dim); padding: 40px;">
+                        No differential diagnosis crossed the clinical probability threshold for this presentation.
+                    </div>
+                `;
+                return;
+            }
+
+            data.candidates.forEach((c, index) => {
+                const card = document.createElement('div');
+                const isTop = index === 0;
+                card.className = `candidate-card ${isTop ? 'top-rank' : ''}`;
+
+                const probPercent = Math.round(c.probability_score * 100);
+                const probWidth = Math.min(100, Math.max(10, probPercent));
+                const mlPercent = c.ml_probability !== undefined ? Math.round(c.ml_probability * 100) : null;
+                const clinPercent = c.clinical_probability !== undefined ? Math.round(c.clinical_probability * 100) : null;
+
+                // Supporting findings chips
+                const matchChips = (c.supporting_findings || []).map(f => `
+                    <span class="match-chip">
+                        <span class="material-symbols-outlined" style="font-size: 12px;">check</span>
+                        ${f.name}
+                    </span>
+                `).join('');
+
+                // Missing findings chips
+                const missingChips = (c.missing_information || []).map(m => `
+                    <span class="missing-chip">${m}</span>
+                `).join('');
+
+                // Investigations list
+                const invList = (c.suggested_investigations || []).slice(0, 4).map(inv => `
+                    <div class="rec-item">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: var(--primary);">biotech</span>
+                        <span>${inv}</span>
+                    </div>
+                `).join('');
+
+                // Treatments list
+                const treatList = (c.recommended_treatments || []).slice(0, 3).map(tr => `
+                    <div class="rec-item">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #10b981;">pill</span>
+                        <span><strong>${tr.medicine_name}:</strong> ${tr.instructions}</span>
+                    </div>
+                `).join('');
+
+                // Contraindication Alerts
+                let contraHtml = '';
+                if (c.contraindication_alerts && c.contraindication_alerts.length > 0) {
+                    contraHtml = c.contraindication_alerts.map(ca => `
+                        <div class="candidate-contra-alert">
+                            <strong>⚠️ Safety Warning [${ca.severity.toUpperCase()}]:</strong>
+                            ${ca.medicine} - ${ca.reason} ${ca.clinical_management ? '(' + ca.clinical_management + ')' : ''}
+                        </div>
+                    `).join('');
+                }
+
+                card.innerHTML = `
+                    <div class="candidate-header">
+                        <div class="candidate-rank-title">
+                            <div class="rank-number">#${c.rank}</div>
+                            <div class="disease-title-text">
+                                <h3>${c.disease_name}</h3>
+                                <div class="disease-meta">
+                                    <span>ICD-10: <strong>${c.icd10_code || 'N/A'}</strong></span>
+                                    <span>•</span>
+                                    <span>Category: ${c.category}</span>
+                                    <span>•</span>
+                                    <span style="color: ${c.confidence_level === 'high' ? '#34d399' : '#f59e0b'}; text-transform: uppercase;">${c.confidence_level} Confidence</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="probability-display">
+                            <div class="prob-number">${probPercent}%</div>
+                            <div class="prob-bar-container">
+                                <div class="prob-bar-fill" style="width: ${probWidth}%;"></div>
+                            </div>
+                            ${mlPercent !== null ? `
+                            <div style="display: flex; gap: 8px; margin-top: 6px; font-size: 0.68rem;">
+                                <span style="color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                                    ML 52.5k: <strong>${mlPercent}%</strong>
+                                </span>
+                                <span style="color: #a78bfa; background: rgba(167, 139, 250, 0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(167, 139, 250, 0.25);">
+                                    Clinical: <strong>${clinPercent}%</strong>
+                                </span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    ${c.confirmatory_evidence && c.confirmatory_evidence.length > 0 ? `
+                        <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.78rem; color: #fde68a;">
+                            <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: #fbbf24;">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+                                <span>Specialist Hospital Confirmatory Evidence Detected:</span>
+                            </div>
+                            ${c.confirmatory_evidence.map(ev => `
+                                <div style="display: flex; align-items: center; gap: 6px; margin-left: 6px; color: #fef08a;">
+                                    <span>✓</span> <span>${ev.text}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="findings-section">
+                        <div class="section-subtitle">Supporting Hallmark Signs & Symptoms Matched (${c.supporting_findings.length})</div>
+                        <div class="findings-chips">
+                            ${matchChips || '<span style="color: var(--text-dim); font-size: 0.75rem;">None</span>'}
+                        </div>
+                    </div>
+
+                    ${c.missing_information && c.missing_information.length > 0 ? `
+                        <div class="findings-section">
+                            <div class="section-subtitle">Pertinent Signs to Check on Exam</div>
+                            <div class="findings-chips">${missingChips}</div>
+                        </div>
+                    ` : ''}
+
+                    <div class="rec-grid">
+                        <div class="rec-col">
+                            <h4><span class="material-symbols-outlined" style="font-size: 16px;">lab_profile</span> Recommended Investigations</h4>
+                            ${invList || '<span style="color: var(--text-dim); font-size: 0.75rem;">None specified</span>'}
+                        </div>
+                        <div class="rec-col">
+                            <h4><span class="material-symbols-outlined" style="font-size: 16px;">prescriptions</span> Evidence-Based Treatment Regimen</h4>
+                            ${treatList || '<span style="color: var(--text-dim); font-size: 0.75rem;">Supportive care</span>'}
+                        </div>
+                    </div>
+
+                    ${contraHtml}
+
+                    <div class="feedback-bar">
+                        <span style="margin-right: auto; font-size: 0.75rem; color: var(--text-dim); align-self: center;">Clinician Decision:</span>
+                        <button class="btn-action confirm" onclick="submitFeedback('${c.id}', 'confirmed', this)">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span> Confirm Diagnosis
+                        </button>
+                        <button class="btn-action" onclick="submitFeedback('${c.id}', 'requires_investigation', this)">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">biotech</span> Order Workup
+                        </button>
+                        <button class="btn-action reject" onclick="submitFeedback('${c.id}', 'rejected', this)">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">cancel</span> Rule Out
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        async function submitFeedback(candidateId, decision, btn) {
+            try {
+                const response = await fetch(`/api/v1/decision-support/candidates/${candidateId}/feedback/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ decision: decision, feedback: 'Clinician validated via CDSS web interface.' })
+                });
+
+                if (response.ok) {
+                    btn.style.background = decision === 'confirmed' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+                    btn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">task_alt</span> Saved`;
+                }
+            } catch (err) {
+                console.error("Failed to submit feedback:", err);
+            }
+        }
+    </script>
+</body>
+</html>
